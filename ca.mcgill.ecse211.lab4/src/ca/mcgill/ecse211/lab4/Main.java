@@ -1,4 +1,3 @@
-// Lab2.java
 package ca.mcgill.ecse211.lab4;
 
 import lejos.hardware.Button;
@@ -16,52 +15,44 @@ public class Main {
    */
   public static void main(String[] args) {
     int buttonChoice;
-    boolean isRisingEdge;
+
+    // Odometer thread
+
+    new Thread(odometer).start();
 
     buttonChoice = chooseClockType();
 
     if (buttonChoice == Button.ID_RIGHT) {
-      isRisingEdge = false;
-    } 
-    else {
-      isRisingEdge = true;
+      new Thread(new Display()).start();
+      UltrasonicLocalizer UltrasonicLocalizer = new UltrasonicLocalizer();
+      UltrasonicLocalizer.localize(false);
     }
 
-    // Odometer thread
+    else {
+      new Thread(new Display()).start();
+      UltrasonicLocalizer UltrasonicLocalizer = new UltrasonicLocalizer();
+      UltrasonicLocalizer.localize(true);
+    }
     
-    new Thread(odometer).start();
-    
-    // Display thread
-    
-    new Thread(new Display()).start();
-    
-    UltrasonicLocalizer UltrasonicLocalizer = new UltrasonicLocalizer();
+    while (Button.waitForAnyPress() != Button.ID_DOWN);
     LightLocalizer LightLocalizer = new LightLocalizer();
-    
-    UltrasonicLocalizer.localize(isRisingEdge);
+    LightLocalizer.localize();
     
     if (Button.waitForAnyPress() == Button.ID_ESCAPE) {
       System.exit(0);
     }
-    
-    while (Button.waitForAnyPress() != Button.ID_DOWN);
-    
-    LightLocalizer.localize();
-    
-    while (Button.waitForAnyPress() == Button.ID_ESCAPE);
-    
-    System.exit(0);
-  
+
   }
 
   private static int chooseClockType() {
     int buttonChoice;
-    Display.showText("< Left | Right >",
-                     "       |        ",
-                     "Rising | Falling",
-                     "  Edge |  Edge  ",
-                     "       |        ");
-    
+    Display.showText(
+        "< Left | Right >",
+        "       |        ",
+        "Rising | Falling",
+        "  Edge |  Edge  ",
+        "       |        ");
+
     do {
       buttonChoice = Button.waitForAnyPress(); // left or right press
     } while (buttonChoice != Button.ID_LEFT && buttonChoice != Button.ID_RIGHT);

@@ -6,7 +6,10 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
+		<item key="selection" value="radToDeg"/>
 		<list key="findhistory">
+			<item value="radToDeg"/>
+			<item value="distanceToRotations"/>
 			<item value="leftMotorTachoCount"/>
 		</list>
 		<list key="replacehistory">

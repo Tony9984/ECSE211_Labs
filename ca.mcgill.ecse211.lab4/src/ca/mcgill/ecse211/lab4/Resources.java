@@ -9,7 +9,7 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
  * This class is used to define static resources in one place for easy access and to avoid 
  * cluttering the rest of the codebase. All resources can be imported at once like this:
  * 
- * <p>{@code import static ca.mcgill.ecse211.lab3.Resources.*;}
+ * <p>{@code import static ca.mcgill.ecse211.lab4.Resources.*;}
  */
 public class Resources {
 
@@ -27,7 +27,7 @@ public class Resources {
    * The color sensor length in centimeters.
    */
   
-  public static final double COLOR_SENSOR_LENGTH = 13.0;
+  public static final double COLOR_SENSOR_LENGTH = 5.0;
 
   /**
    * The speed at which the robot rotates in degrees per second.
@@ -37,7 +37,7 @@ public class Resources {
   /**
    * The speed at which the robot moves forward in degrees per second.
    */
-  public static final int FORWARD_SPEED = 180;
+  public static final int FORWARD_SPEED = 150;
 
   /**
    * Timeout period in milliseconds.
@@ -47,7 +47,6 @@ public class Resources {
   /**
    * Filter time (ms)
    */
-
   public static final int FILTER_OUT = 20;
 
   /**
