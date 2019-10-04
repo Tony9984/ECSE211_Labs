@@ -1,0 +1,111 @@
+package ca.mcgill.ecse211.lab2;
+
+import static ca.mcgill.ecse211.lab2.Resources.*;
+import lejos.hardware.Sound;
+import lejos.robotics.SampleProvider;
+
+public class OdometryCorrection implements Runnable {
+  private static final long CORRECTION_PERIOD = 10;
+  
+  private static SampleProvider myColor = colorSensor.getMode("red");
+  
+  private static float[] sampleColor = new float[myColor.sampleSize()];
+  
+  Odometer odometer = Odometer.getOdometer();
+  
+  double colorValue;
+  
+  private int counterStartY = 0;
+  
+  private int counterStartX = 0;
+  
+  private double distanceCorrectionY = 0;
+  
+  private double distanceCorrectionX = 0;
+  
+  private int counterX = 0;
+  
+  private int counterY = 0;
+  
+  private double theta;
+  
+  private double initialPosition[];
+
+  /*
+   * Here is where the odometer correction code should be run.
+   */
+  public void run() {
+    long correctionStart, correctionEnd;
+
+    while (true) {
+      correctionStart = System.currentTimeMillis();
+      
+      myColor.fetchSample(sampleColor, 0);
+      
+      colorValue = sampleColor[0] * 1000;
+      
+      if (colorValue < 400.0) {
+        
+        Sound.twoBeeps();
+        
+        initialPosition = odometer.getXYT();
+        
+        theta = initialPosition[2];
+        
+        // GOING NORTH
+        
+        if ((theta >= 330 && theta <= 360) || (theta >= 0 && theta <= 30)) {
+          if (counterStartY == 0) {
+            distanceCorrectionY = initialPosition[0];
+            counterStartY++;
+          }
+          else {
+            odometer.setY(distanceCorrectionY + counterY * TILE_SIZE);
+            counterY++;
+          }
+        }
+        
+        // GOING EAST
+        
+        else if (theta >= 60 && theta <= 120) {
+          if (counterStartX == 0) {
+            distanceCorrectionX = initialPosition[1];
+            counterStartX++;
+          }
+          else {
+            odometer.setX(distanceCorrectionX + counterX * TILE_SIZE);
+            counterX++;
+          }
+        }
+        
+        // GOING SOUTH
+        
+        else if (theta >= 150 && theta <= 210) {
+          odometer.setY(TILE_SIZE * counterY);
+          counterY--;
+        }
+        
+        // GOING WEST
+        
+        else if (theta >= 240 && theta <= 300) {
+          odometer.setX(TILE_SIZE * counterX);
+          counterX--;
+        }
+      }
+
+      // TODO Trigger correction (When do I have information to correct?)
+      
+      // TODO Calculate new (accurate) robot position
+
+      // TODO Update odometer with new calculated (and more accurate) values, eg:
+      //odometer.setXYT(0.3, 19.23, 5.0);
+
+      // this ensures the odometry correction occurs only once every period
+      correctionEnd = System.currentTimeMillis();
+      if (correctionEnd - correctionStart < CORRECTION_PERIOD) {
+        Main.sleepFor(CORRECTION_PERIOD - (correctionEnd - correctionStart));
+      }
+    }
+  }
+  
+}

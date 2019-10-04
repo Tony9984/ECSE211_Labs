@@ -1,0 +1,20 @@
+package ca.mcgill.ecse211.lab4;
+
+import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.SensorModes;
+import lejos.robotics.SampleProvider;
+
+public class LightLocalizer {
+
+  private static final Port colourSampler = LocalEV3.get().getPort("S2");
+  private SensorModes colourSamplerSensor = new EV3ColorSensor(colourSampler);
+  private SampleProvider colourSensorValue = colourSamplerSensor.getMode("Red");
+  private float[] colourSensorValues = new float[colourSamplerSensor.sampleSize()];
+
+  public void localize() {
+
+  }
+
+}

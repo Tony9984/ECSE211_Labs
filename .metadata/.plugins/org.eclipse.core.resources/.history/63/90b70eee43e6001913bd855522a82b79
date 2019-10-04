@@ -1,0 +1,37 @@
+package ca.mcgill.ecse211.lab4;
+
+import static ca.mcgill.ecse211.lab4.Resources.*;
+import lejos.robotics.SampleProvider;
+
+public class UltrasonicLocalizer {
+  
+  private static SampleProvider myDistance = US_SENSOR.getMode("Distance");
+
+  private static float[] usData = new float[myDistance.sampleSize()];
+  
+  public void localize(boolean isRisingEdge) {
+    if (isRisingEdge) {
+      risingEdge();
+    }
+    else {
+      fallingEdge();
+    }
+  }
+  
+  public void fallingEdge() {
+    
+  }
+  
+  public void risingEdge() {
+    
+  }
+  
+  private int readUSData() {
+    US_SENSOR.getDistanceMode().fetchSample(usData, 0);
+    return (int) (usData[0] * 100.0);
+  }
+  
+  private int radToDeg(double angle) {
+    return distanceToRotations(TRACK * angle / 2);
+  }
+}

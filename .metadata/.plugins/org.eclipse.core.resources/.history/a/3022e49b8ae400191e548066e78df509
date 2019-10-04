@@ -1,0 +1,262 @@
+package ca.mcgill.ecse211.lab3;
+
+import static ca.mcgill.ecse211.lab3.Resources.*;
+import lejos.hardware.Sound;
+import lejos.robotics.SampleProvider;
+
+public class NavigationWithObstacles extends Thread {
+
+  private static boolean navigating = true;
+
+  int distance;
+
+  private int filterControl = 0;
+
+  private static SampleProvider myDistance = US_SENSOR.getMode("Distance");
+
+  private static float[] usData = new float[myDistance.sampleSize()];
+
+  /**
+   * Run function, input waypoints here
+   */
+
+  public void run() {
+
+    travelTo(3 * TILE_SIZE, 2 * TILE_SIZE );
+    travelTo(2 * TILE_SIZE, 2 * TILE_SIZE );
+    travelTo(2 * TILE_SIZE, 3 * TILE_SIZE );
+    travelTo(3 * TILE_SIZE, 1 * TILE_SIZE );
+
+  }
+
+  public void travelTo(double x, double y) {
+
+    System.out.println("TRAVEL_TO");
+
+    // Initialize variables
+
+    double dx, dy, displacement, theta;
+
+    // Reset motors and set default acceleration
+
+    leftMotor.stop();
+    rightMotor.stop();
+    leftMotor.setAcceleration(ACCELERATION);
+    rightMotor.setAcceleration(ACCELERATION);
+
+    // Get the displacement and the angle to reach the
+    // waypoint at (x, y)
+
+    dx = x - odometer.getXYT()[0];
+    dy = y - odometer.getXYT()[1];
+    displacement = Math.hypot(dx, dy);
+    theta = Math.atan2(dy, dx);
+
+    // Make the robot turn to the right direction
+
+    leftMotor.setSpeed(ROTATE_SPEED);
+    rightMotor.setSpeed(ROTATE_SPEED);
+    turnTo(theta);
+
+    // Cover the distance to the waypoint
+
+    leftMotor.setSpeed(FORWARD_SPEED);
+    rightMotor.setSpeed(FORWARD_SPEED);
+
+    // Return two values to allow an additional thread for the US sensor
+
+    leftMotor.rotate(distanceToRotations(displacement), true);
+    rightMotor.rotate(distanceToRotations(displacement), true);
+
+    // Sensor motor setup
+
+    sensorMotor.resetTachoCount();
+    sensorMotor.setSpeed(SCAN_SPEED);
+
+    // When the robot is moving, move the sensor
+
+    while (leftMotor.isMoving() || rightMotor.isMoving()) {
+
+      // Fetch distance from sensor and filter
+
+      US_SENSOR.getDistanceMode().fetchSample(usData, 0); // acquire distance data in meters
+      distance = (int) (usData[0] * 100.0); // extract from buffer, convert to cm, cast to int
+      filter(distance);
+
+      // Turn left until sensor distance is within bandCenter
+
+      if (distance <= BAND_CENTER) {
+        leftMotor.stop(true);
+        rightMotor.stop(false);
+        navigating = false;
+      }
+      try {
+        Thread.sleep(50);
+      } catch (Exception e) {
+      } // Poor man's timed sampling
+
+      // Obstacle avoidance
+      if (!this.isNavigating()) {
+        Sound.beep(); // Alert using sound
+        avoidObstacle();
+        sensorMotor.rotateTo(0);
+        navigating = true;
+        travelTo(x, y);
+        return;
+      }
+
+      // Reset sensor to initial position
+
+      sensorMotor.rotate(0);
+
+    }
+  }
+
+  /**
+   * This method takes a distance and converts it to the
+   * number of wheel rotations needed
+   * 
+   * @param distance
+   * @return
+   */
+
+  private int distanceToRotations(double distance) {
+    int rotations = (int) (180 * distance / (Math.PI * WHEEL_RAD));
+    return rotations;
+  }
+
+  /**
+   * This method makes the robot turn to the right waypoint
+   * 
+   * @param theta
+   */
+
+  public void turnTo(double theta) {
+
+    // Get the minimal angle first
+
+    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]));
+
+    // Return one value immediately so only 3 threads are running
+
+    leftMotor.rotate(radToDeg(turnAngle), true);
+    rightMotor.rotate(-radToDeg(turnAngle), false);
+
+  }
+
+  /**
+   * This method takes an angle and uses a formula
+   * to convert it to its minimum value
+   * 
+   * @param angle
+   * @return
+   */
+
+  public double getMinAngle(double angle) {
+    if (angle > Math.PI) {
+      angle = angle - 2 * Math.PI;
+    } else if (angle < -Math.PI) {
+      angle = 2 * Math.PI + angle;
+    }
+    return angle;
+  }
+
+  /**
+   * This method transforms the angle in rad to degrees
+   * 
+   * @param angle
+   * @return
+   */
+
+  private int radToDeg(double angle) {
+    int rotations = distanceToRotations(TRACK * angle / 2);
+    return rotations;
+  }
+
+  /**
+   * This method returns if the robot is travelling or not
+   * 
+   * @return
+   */
+
+  public boolean isNavigating() {
+    return navigating;
+  }
+
+  /**
+   * This method gets the distance read by the ultrasonic sensor
+   * 
+   * @return
+   */
+
+  public int readUSDistance() {
+    return this.distance;
+  }
+
+  public void avoidObstacle() {
+
+    // Turn 90degrees right
+    turnTo(Math.toRadians(odometer.getXYT()[2]) - Math.PI / 2);
+
+    // Adjust sensor motor to peak angle for obstacle detection
+    sensorMotor.rotateTo(OBSTACLE_SENSOR_ANGLE);
+
+    double endAngle = Math.toRadians(odometer.getXYT()[2]) + Math.PI * 0.5;
+
+    // Bang-Bang controller like logic to avoid obstacle
+    while (Math.toRadians(odometer.getXYT()[2]) < endAngle) {
+      US_SENSOR.fetchSample(usData, 0);
+      distance = (int) (usData[0] * 100.0);
+      int errorDistance = BAND_CENTER - distance;
+
+      // Drive straight
+      if (Math.abs(errorDistance) <= BAND_WIDTH) {
+        leftMotor.setSpeed(OBSTACLE_LOW);
+        rightMotor.setSpeed(OBSTACLE_LOW);
+        leftMotor.forward();
+        rightMotor.forward();
+      }
+
+      // Robot is on the inside of the offset and over the bandwidth
+      else if (errorDistance > 0) {
+        rightMotor.setSpeed(OBSTACLE_LOW);
+        leftMotor.setSpeed(OBSTACLE_TURN_OUT_SPEED);
+        rightMotor.forward();
+        leftMotor.backward();
+      }
+
+      // Robot is on the outside of the offset and over the bandwidth
+      else if (errorDistance < 0) {
+        rightMotor.setSpeed(OBSTACLE_LOW);
+        leftMotor.setSpeed(OBSTACLE_TURN_IN_SPEED);
+        rightMotor.forward();
+        leftMotor.forward();
+      }
+    }
+
+    // Finished cornering the obstacle
+    leftMotor.stop();
+    rightMotor.stop();
+
+  }
+
+  /**
+   * This method filters out bad values (from lab1)
+   * 
+   * @param distance
+   */
+
+  private void filter(int distance) {
+    if (distance >= 255 && filterControl < FILTER_OUT) {
+      // bad value, do not set the distance var, however do increment the filter value
+      filterControl++;
+    } else if (distance >= 255) {
+      // Repeated large values, so there is nothing there: leave the distance alone
+      this.distance = distance;
+    } else {
+      // distance went below 255: reset filter and leave distance alone.
+      filterControl = 0;
+      this.distance = distance;
+    }
+  }
+}

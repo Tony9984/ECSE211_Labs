@@ -1,0 +1,86 @@
+package ca.mcgill.ecse211.lab4;
+
+import static ca.mcgill.ecse211.lab4.Resources.*;
+import lejos.hardware.Sound;
+import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.port.Port;
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.SensorModes;
+import lejos.robotics.SampleProvider;
+
+public class LightLocalizer {
+
+  private static final Port colourSampler = LocalEV3.get().getPort("S2");
+  private SensorModes colourSamplerSensor = new EV3ColorSensor(colourSampler);
+  private SampleProvider colourSensorValue = colourSamplerSensor.getMode("Red");
+  private float[] colourSensorValues = new float[colourSamplerSensor.sampleSize()];
+  private float colorValue;
+
+  public void localize() {
+    
+  }
+  
+  public void goToOrigin() {
+    
+    turnTo(Math.PI / 4);
+    
+    leftMotor.setSpeed(ROTATE_SPEED);
+    rightMotor.setSpeed(ROTATE_SPEED);
+    
+    colorValue = readColorData();
+    
+    while (colorValue > 0.38) {
+      colorValue = readColorData();
+      leftMotor.forward();
+      rightMotor.forward();
+    }
+    
+    leftMotor.stop(true);
+    rightMotor.stop();
+    Sound.beep();
+    
+    leftMotor.rotate(distanceToRotations(-12), true);
+    rightMotor.rotate(distanceToRotations(-12), false);
+    
+  }
+  
+  public void turnTo(double theta) {
+    
+    theta = getMinAngle(theta);
+    
+    leftMotor.setSpeed(ROTATE_SPEED);
+    rightMotor.setSpeed(ROTATE_SPEED);
+    
+    if (theta < 0) {
+      leftMotor.rotate(-radToDeg(-theta), true);
+      rightMotor.rotate(radToDeg(-theta), false);
+    }
+    else {
+      leftMotor.rotate(radToDeg(theta), true);
+      rightMotor.rotate(-radToDeg(theta), false);
+    }
+  }
+  
+  private float readColorData() {
+    colourSensorValue.fetchSample(colourSensorValues, 0);
+    return colourSensorValues[0];
+  }
+
+  private int distanceToRotations(double distance) {
+    return (int) (180.0 * distance / (Math.PI * WHEEL_RAD));
+  }
+
+  private int radToDeg(double angle) {
+    return distanceToRotations(TRACK * angle / 2);
+  }
+  
+  public double getMinAngle(double angle) {
+    if (angle > Math.PI) {
+      angle -= 2 * Math.PI;
+    } else if (angle < -Math.PI) {
+      angle += 2 * Math.PI ;
+    }
+    return angle;
+  }
+
+}
