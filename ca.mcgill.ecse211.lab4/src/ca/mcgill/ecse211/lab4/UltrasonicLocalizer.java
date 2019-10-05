@@ -55,6 +55,9 @@ public class UltrasonicLocalizer {
     // Turn to 0 degrees
 
     turnTo(0);
+    
+    // Update odometer values
+    odometer.setXYT(0.0, 0.0, 0.0);
 
     // Stop motors
 
@@ -200,7 +203,7 @@ public class UltrasonicLocalizer {
 
     // Get the minimal turn angle
 
-    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]) - Math.PI);
+    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]));
 
     // If angle is negative, turn left
 

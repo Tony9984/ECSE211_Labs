@@ -40,7 +40,7 @@ public class LightLocalizer {
 
     leftMotor.setSpeed(ROTATE_SPEED);
     rightMotor.setSpeed(ROTATE_SPEED);
-    
+
     goToOrigin();
 
     // Starting index for line detection
@@ -91,7 +91,7 @@ public class LightLocalizer {
     // Update odometer values and move to origin
 
     odometer.setXYT(dx, dy, Math.atan2(dy, dx) + 180);
-    
+
     travelTo(0, 0);
 
     // Stop motors
@@ -202,20 +202,20 @@ public class LightLocalizer {
 
     // Get the minimum angle
 
-    theta = getMinAngle(theta);
+    double turnAngle = getMinAngle(theta- Math.toRadians(odometer.getXYT()[2]));
 
     // If angle is negative, turn left
 
     if (theta < 0) {
-      leftMotor.rotate(-radToDeg(-Math.toRadians(theta)), true);
-      rightMotor.rotate(radToDeg(-Math.toRadians(theta)), false);
+      leftMotor.rotate(-radToDeg(-Math.toRadians(turnAngle)), true);
+      rightMotor.rotate(radToDeg(-Math.toRadians(turnAngle)), false);
     }
 
     // If angle is positive, turn right
 
     else {
-      leftMotor.rotate(radToDeg(Math.toRadians(theta)), true);
-      rightMotor.rotate(-radToDeg(Math.toRadians(theta)), false);
+      leftMotor.rotate(radToDeg(Math.toRadians(turnAngle)), true);
+      rightMotor.rotate(-radToDeg(Math.toRadians(turnAngle)), false);
     }
   }
 
