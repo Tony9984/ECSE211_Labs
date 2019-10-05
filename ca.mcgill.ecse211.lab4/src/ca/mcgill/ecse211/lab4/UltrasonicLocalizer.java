@@ -23,11 +23,17 @@ public class UltrasonicLocalizer {
    */
 
   public void localize(boolean isRisingEdge) {
+    
+    // Initializes variables
 
     double angleA, angleB, deltaT;
+    
+    // Set motor speeds
 
     leftMotor.setSpeed(ROTATE_SPEED);
     rightMotor.setSpeed(ROTATE_SPEED);
+    
+    // Get angles depending on clock type
 
     if (isRisingEdge) {
       angleA = getAngleARise();
@@ -57,6 +63,7 @@ public class UltrasonicLocalizer {
     turnTo(0);
     
     // Update odometer values
+    
     odometer.setXYT(0.0, 0.0, 0.0);
 
     // Stop motors
@@ -66,6 +73,12 @@ public class UltrasonicLocalizer {
     rightMotor.stop();
 
   }
+  
+  /**
+   * Method to calculate the first angle of rising edge clock
+   * 
+   * @return
+   */
 
   private double getAngleARise() {
 
@@ -96,6 +109,12 @@ public class UltrasonicLocalizer {
     return odometer.getXYT()[2];
 
   }
+  
+  /**
+   * Method to calculate the second angle of rising edge clock
+   * 
+   * @return
+   */
 
   private double getAngleBRise() {
 
@@ -125,6 +144,12 @@ public class UltrasonicLocalizer {
 
     return odometer.getXYT()[2];
   }
+  
+  /**
+   * Method to calculate the first angle of falling edge clock
+   * 
+   * @return
+   */
 
   private double getAngleAFall() {
 
@@ -152,6 +177,12 @@ public class UltrasonicLocalizer {
 
     return odometer.getXYT()[2];
   }
+  
+  /**
+   * Method to calculate the second angle of falling edge clock
+   * 
+   * @return
+   */
 
   private double getAngleBFall() {
 
@@ -190,6 +221,9 @@ public class UltrasonicLocalizer {
   private float readUSData() {
     US_SENSOR.getDistanceMode().fetchSample(usData, 0);
     float distance = usData[0] * 100;
+    
+    // Simple logic to filter out large distances
+    
     return distance > 100 ? 100 : distance;
   }
   
@@ -203,7 +237,7 @@ public class UltrasonicLocalizer {
 
     // Get the minimal turn angle
 
-    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]));
+    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]) - Math.PI);
 
     // If angle is negative, turn left
 

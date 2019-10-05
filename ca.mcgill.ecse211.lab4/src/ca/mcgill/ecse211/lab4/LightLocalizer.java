@@ -40,7 +40,6 @@ public class LightLocalizer {
 
     leftMotor.setSpeed(ROTATE_SPEED);
     rightMotor.setSpeed(ROTATE_SPEED);
-
     goToOrigin();
 
     // Starting index for line detection
@@ -101,7 +100,11 @@ public class LightLocalizer {
 
     // Rotate robot until it is at 0 degrees
 
-    turnTo(0);
+    if (odometer.getXYT()[2] <= 350 && odometer.getXYT()[2] >= 10.0) {
+      Sound.beep();
+      leftMotor.rotate(radToDeg(-odometer.getXYT()[2]), true);
+      rightMotor.rotate(-radToDeg(-odometer.getXYT()[2]), false);
+    }
 
     // Stop motors
 
@@ -117,13 +120,13 @@ public class LightLocalizer {
 
   public void goToOrigin() {
 
-    // Make the robot face the origin by turning 45 degrees
+    // Make the robot face backwards to the origin
 
     turnTo(225);
 
     colorValue = readColorData();
 
-    // Move robot until it detects a line
+    // Move robot backwards until it detects a line
 
     while (colorValue > 0.25) {
       colorValue = readColorData();
@@ -201,21 +204,26 @@ public class LightLocalizer {
   public void turnTo(double theta) {
 
     // Get the minimum angle
+    System.out.println("TURNING TO " + theta);
+    System.out.println("Input theta: " + theta);
+    System.out.println("Current angle (rad): " + Math.toRadians(odometer.getXYT()[2]));
 
-    double turnAngle = getMinAngle(theta- Math.toRadians(odometer.getXYT()[2]));
+    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]) - Math.PI);
+
+    System.out.println("Turn angle: " + turnAngle);
 
     // If angle is negative, turn left
 
     if (theta < 0) {
-      leftMotor.rotate(-radToDeg(-Math.toRadians(turnAngle)), true);
-      rightMotor.rotate(radToDeg(-Math.toRadians(turnAngle)), false);
+      leftMotor.rotateTo(-radToDeg(-Math.toRadians(turnAngle)), true);
+      rightMotor.rotateTo(radToDeg(-Math.toRadians(turnAngle)), false);
     }
 
     // If angle is positive, turn right
 
     else {
-      leftMotor.rotate(radToDeg(Math.toRadians(turnAngle)), true);
-      rightMotor.rotate(-radToDeg(Math.toRadians(turnAngle)), false);
+      leftMotor.rotateTo(radToDeg(Math.toRadians(turnAngle)), true);
+      rightMotor.rotateTo(-radToDeg(Math.toRadians(turnAngle)), false);
     }
   }
 

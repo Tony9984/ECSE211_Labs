@@ -19,6 +19,9 @@ public class Main {
     // Odometer thread
 
     new Thread(odometer).start();
+    
+    // Create instance of US localizer depending on button choice
+    // (Rising or falling edge)
 
     buttonChoice = chooseClockType();
 
@@ -34,15 +37,25 @@ public class Main {
       UltrasonicLocalizer.localize(true);
     }
     
+    // After the US localizer is complete, press button to start light localizer
+    
     while (Button.waitForAnyPress() != Button.ID_DOWN);
     LightLocalizer LightLocalizer = new LightLocalizer();
     LightLocalizer.localize();
+    
+    // Press escape to exit after program
     
     if (Button.waitForAnyPress() == Button.ID_ESCAPE) {
       System.exit(0);
     }
 
   }
+  
+  /**
+   * Displays available clock choices for US localizer
+   * 
+   * @return
+   */
 
   private static int chooseClockType() {
     int buttonChoice;
