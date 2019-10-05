@@ -38,6 +38,11 @@ public class Resources {
    * The speed at which the robot moves forward in degrees per second.
    */
   public static final int FORWARD_SPEED = 150;
+  
+  /**
+   * The motor acceleration in degrees per second squared.
+   */
+  public static final int ACCELERATION = 500;
 
   /**
    * Timeout period in milliseconds.

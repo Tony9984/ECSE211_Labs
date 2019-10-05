@@ -41,10 +41,10 @@ public class UltrasonicLocalizer {
     // Calculate deltaT (degrees)
 
     if (angleA < angleB) {
-      deltaT = 45 - (angleA + angleB) / 2.0;
+      deltaT = 45 - (angleA + angleB)/2.0;
     }
     else {
-      deltaT = 225 - (angleA + angleB) / 2.0;
+      deltaT = 225 - (angleA + angleB)/2.0;
     }
 
     // Calculate the turning angle (degrees)
@@ -68,7 +68,7 @@ public class UltrasonicLocalizer {
 
     // Turn left until wall is detected
 
-    while (readUSData() > wall_distance) {
+    while (readUSData() > wall_distance - margin) {
       leftMotor.backward();
       rightMotor.forward();
     }
@@ -77,7 +77,7 @@ public class UltrasonicLocalizer {
 
     // Keep turning until open area is detected
 
-    while (readUSData() < wall_distance + margin) {
+    while (readUSData() < wall_distance) {
       leftMotor.backward();
       rightMotor.forward();
     }
@@ -98,7 +98,7 @@ public class UltrasonicLocalizer {
 
     // Turn right until wall is detected
 
-    while (readUSData() > wall_distance) {
+    while (readUSData() > wall_distance - margin) {
       leftMotor.forward();
       rightMotor.backward();
     }
@@ -107,7 +107,7 @@ public class UltrasonicLocalizer {
 
     // Keep turning until open area is detected
 
-    while (readUSData() < wall_distance + margin) {
+    while (readUSData() < wall_distance) {
       leftMotor.forward();
       rightMotor.backward();
     }
@@ -124,33 +124,6 @@ public class UltrasonicLocalizer {
   }
 
   private double getAngleAFall() {
-
-    // Turn left until open area is detected
-
-    while (readUSData() < wall_distance + margin) {
-      leftMotor.backward();
-      rightMotor.forward();
-    }
-
-    // Keep turning until wall is detected
-
-    while (readUSData() > wall_distance) {
-      leftMotor.backward();
-      rightMotor.forward();
-    }
-
-    // Alert with sound and stop motors
-
-    Sound.beep();
-    leftMotor.stop(true);
-    rightMotor.stop();
-
-    // Record the first angle value (degrees)
-
-    return odometer.getXYT()[2];
-  }
-
-  private double getAngleBFall() {
 
     // Turn right until open area is detected
 
@@ -172,29 +145,37 @@ public class UltrasonicLocalizer {
     leftMotor.stop(true);
     rightMotor.stop();
 
+    // Record the first angle value (degrees)
+
+    return odometer.getXYT()[2];
+  }
+
+  private double getAngleBFall() {
+
+    // Turn right until open area is detected
+
+    while (readUSData() < wall_distance + margin) {
+      leftMotor.backward();
+      rightMotor.forward();
+    }
+
+    // Keep turning until wall is detected
+
+    while (readUSData() > wall_distance) {
+      leftMotor.backward();
+      rightMotor.forward();
+    }
+
+    // Alert with sound and stop motors
+
+    Sound.beep();
+    leftMotor.stop(true);
+    rightMotor.stop();
+
     // Record the second angle value (degrees)
 
     return odometer.getXYT()[2];
 
-  }
-
-  /**
-   * This method makes the robot turn to theta (taken from lab3)
-   * 
-   * @param theta
-   */
-
-  public void turnTo(double theta) {
-
-    // Get the minimal turn angle
-
-    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]) - Math.PI);
-
-    // Return one value immediately so only 3 threads are running
-    // Rotate each motor to the right direction
-
-    leftMotor.rotate(radToDeg(turnAngle), true);
-    rightMotor.rotate(-radToDeg(turnAngle), false);
   }
 
   /**
@@ -207,6 +188,50 @@ public class UltrasonicLocalizer {
     US_SENSOR.getDistanceMode().fetchSample(usData, 0);
     float distance = usData[0] * 100;
     return distance > 100 ? 100 : distance;
+  }
+  
+  /**
+   * This method makes the robot turn to theta (taken from lab3)
+   * 
+   * @param theta
+   */
+
+  public void turnTo(double theta) {
+
+    // Get the minimal turn angle
+
+    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]) - Math.PI);
+
+    // If angle is negative, turn left
+
+    if (theta < 0) {
+      leftMotor.rotate(-radToDeg(turnAngle), true);
+      rightMotor.rotate(radToDeg(turnAngle), false);
+    }
+
+    // If angle is positive, turn right
+
+    else {
+      leftMotor.rotate(radToDeg(turnAngle), true);
+      rightMotor.rotate(-radToDeg(turnAngle), false);
+    }
+  }
+
+  /**
+   * This method calculates the minimum value of an angle
+   * (taken from lab3)
+   * 
+   * @param angle
+   * @return
+   */
+
+  private double getMinAngle(double angle) {
+    if (angle > Math.PI) {
+      angle -= 2 * Math.PI;
+    } else if (angle < -Math.PI) {
+      angle += 2 * Math.PI ;
+    }
+    return angle;
   }
 
   /**
@@ -230,23 +255,6 @@ public class UltrasonicLocalizer {
 
   private int radToDeg(double angle) {
     return distanceToRotations(TRACK * angle / 2);
-  }
-
-  /**
-   * This method calculates the minimum value of an angle
-   * (taken from lab3)
-   * 
-   * @param angle
-   * @return
-   */
-
-  public double getMinAngle(double angle) {
-    if (angle > Math.PI) {
-      angle -= 2 * Math.PI;
-    } else if (angle < -Math.PI) {
-      angle += 2 * Math.PI ;
-    }
-    return angle;
   }
 
 }
