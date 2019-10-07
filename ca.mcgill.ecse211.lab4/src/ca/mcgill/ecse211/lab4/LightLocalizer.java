@@ -89,7 +89,7 @@ public class LightLocalizer {
 
     // Update odometer values and move to origin
 
-    odometer.setXYT(dx, dy, odometer.getXYT()[2]-5);
+    odometer.setXYT(dx, dy, odometer.getXYT()[2]);
 
     travelTo(0, 0);
 
