@@ -61,7 +61,7 @@ public class LightLocalizer {
 
       // If a line is detected, update the array with its theta value
 
-      if (colorValue < 0.25 && !onBlackLine) {
+      if (colorValue < 0.3 && !onBlackLine) {
         lineMeasures[index] = odometer.getXYT()[2];
         Sound.beep();
         index++;
@@ -98,12 +98,23 @@ public class LightLocalizer {
     leftMotor.stop(true);
     rightMotor.stop();
 
-    // Rotate robot until it is at 0 degrees
-
-    if (odometer.getXYT()[2] <= 350 && odometer.getXYT()[2] >= 10.0) {
-      Sound.beep();
-      leftMotor.rotate(radToDeg(-odometer.getXYT()[2]), true);
-      rightMotor.rotate(-radToDeg(-odometer.getXYT()[2]), false);
+    // Turn to 0 degrees
+    
+    double currentAngle = odometer.getXYT()[2];
+    
+    leftMotor.setSpeed(50);
+    rightMotor.setSpeed(50);
+    
+    leftMotor.forward();
+    rightMotor.backward();
+    
+    while(true) {
+      if (currentAngle >= 10 && currentAngle <= 20) {
+        break;
+      }
+      else {
+        currentAngle = odometer.getXYT()[2];
+      }
     }
 
     // Stop motors
@@ -128,7 +139,7 @@ public class LightLocalizer {
 
     // Move robot backwards until it detects a line
 
-    while (colorValue > 0.25) {
+    while (colorValue > 0.3) {
       colorValue = readColorData();
       leftMotor.backward();
       rightMotor.backward();
@@ -204,26 +215,21 @@ public class LightLocalizer {
   public void turnTo(double theta) {
 
     // Get the minimum angle
-    System.out.println("TURNING TO " + theta);
-    System.out.println("Input theta: " + theta);
-    System.out.println("Current angle (rad): " + Math.toRadians(odometer.getXYT()[2]));
 
-    double turnAngle = getMinAngle(theta - Math.toRadians(odometer.getXYT()[2]) - Math.PI);
-
-    System.out.println("Turn angle: " + turnAngle);
+    theta = getMinAngle(theta);
 
     // If angle is negative, turn left
 
     if (theta < 0) {
-      leftMotor.rotateTo(-radToDeg(-Math.toRadians(turnAngle)), true);
-      rightMotor.rotateTo(radToDeg(-Math.toRadians(turnAngle)), false);
+      leftMotor.rotate(-radToDeg(-Math.toRadians(theta)), true);
+      rightMotor.rotate(radToDeg(-Math.toRadians(theta)), false);
     }
 
     // If angle is positive, turn right
 
     else {
-      leftMotor.rotateTo(radToDeg(Math.toRadians(turnAngle)), true);
-      rightMotor.rotateTo(-radToDeg(Math.toRadians(turnAngle)), false);
+      leftMotor.rotate(radToDeg(Math.toRadians(theta)), true);
+      rightMotor.rotate(-radToDeg(Math.toRadians(theta)), false);
     }
   }
 
