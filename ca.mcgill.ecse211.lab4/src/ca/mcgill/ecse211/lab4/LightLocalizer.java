@@ -89,7 +89,7 @@ public class LightLocalizer {
 
     // Update odometer values and move to origin
 
-    odometer.setXYT(dx, dy, Math.atan2(dy, dx) + 180);
+    odometer.setXYT(dx, dy, odometer.getXYT()[2]-5);
 
     travelTo(0, 0);
 
@@ -99,20 +99,20 @@ public class LightLocalizer {
     rightMotor.stop();
 
     // Turn to 0 degrees
-    
+
     double currentAngle = odometer.getXYT()[2];
-    
+
     // Set speed and motor direction
-    
-    leftMotor.setSpeed(50);
-    rightMotor.setSpeed(50);
+
+    leftMotor.setSpeed(ROTATE_SPEED);
+    rightMotor.setSpeed(ROTATE_SPEED);
     leftMotor.forward();
     rightMotor.backward();
-    
+
     // Keep turning until angle is pointing north
-    
+
     while(true) {
-      if (currentAngle >= 10 && currentAngle <= 20) {
+      if (currentAngle >= 360 || currentAngle <= 10) {
         break;
       }
       else {
