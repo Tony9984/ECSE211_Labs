@@ -102,11 +102,14 @@ public class LightLocalizer {
     
     double currentAngle = odometer.getXYT()[2];
     
+    // Set speed and motor direction
+    
     leftMotor.setSpeed(50);
     rightMotor.setSpeed(50);
-    
     leftMotor.forward();
     rightMotor.backward();
+    
+    // Keep turning until angle is pointing north
     
     while(true) {
       if (currentAngle >= 10 && currentAngle <= 20) {
