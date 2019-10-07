@@ -233,7 +233,7 @@ public class UltrasonicLocalizer {
    * @param theta
    */
 
-  public void turnTo(double theta) {
+  private void turnTo(double theta) {
 
     // Get the minimal turn angle
 
@@ -242,15 +242,15 @@ public class UltrasonicLocalizer {
     // If angle is negative, turn left
 
     if (theta < 0) {
-      leftMotor.rotate(-radToDeg(turnAngle), true);
-      rightMotor.rotate(radToDeg(turnAngle), false);
+      leftMotor.rotate(-convertAngle(turnAngle), true);
+      rightMotor.rotate(convertAngle(turnAngle), false);
     }
 
     // If angle is positive, turn right
 
     else {
-      leftMotor.rotate(radToDeg(turnAngle), true);
-      rightMotor.rotate(-radToDeg(turnAngle), false);
+      leftMotor.rotate(convertAngle(turnAngle), true);
+      rightMotor.rotate(-convertAngle(turnAngle), false);
     }
   }
 
@@ -290,7 +290,7 @@ public class UltrasonicLocalizer {
    * @return
    */
 
-  private int radToDeg(double angle) {
+  private int convertAngle(double angle) {
     return distanceToRotations(TRACK * angle / 2);
   }
 

@@ -132,7 +132,7 @@ public class LightLocalizer {
    * 
    */
 
-  public void goToOrigin() {
+  private void goToOrigin() {
 
     // Make the robot face backwards to the origin
 
@@ -171,7 +171,7 @@ public class LightLocalizer {
    * @param y
    */
 
-  public void travelTo(double x, double y) {
+  private void travelTo(double x, double y) {
 
     // Initializes variables
 
@@ -215,7 +215,7 @@ public class LightLocalizer {
    * @param theta
    */
 
-  public void turnTo(double theta) {
+  private void turnTo(double theta) {
 
     // Get the minimum angle
 
@@ -224,15 +224,15 @@ public class LightLocalizer {
     // If angle is negative, turn left
 
     if (theta < 0) {
-      leftMotor.rotate(-radToDeg(-Math.toRadians(theta)), true);
-      rightMotor.rotate(radToDeg(-Math.toRadians(theta)), false);
+      leftMotor.rotate(-convertAngle(-Math.toRadians(theta)), true);
+      rightMotor.rotate(convertAngle(-Math.toRadians(theta)), false);
     }
 
     // If angle is positive, turn right
 
     else {
-      leftMotor.rotate(radToDeg(Math.toRadians(theta)), true);
-      rightMotor.rotate(-radToDeg(Math.toRadians(theta)), false);
+      leftMotor.rotate(convertAngle(Math.toRadians(theta)), true);
+      rightMotor.rotate(-convertAngle(Math.toRadians(theta)), false);
     }
   }
 
@@ -266,7 +266,7 @@ public class LightLocalizer {
    * @return
    */
 
-  private int radToDeg(double angle) {
+  private int convertAngle(double angle) {
     return distanceToRotations(TRACK * angle / 2);
   }
 
@@ -278,7 +278,7 @@ public class LightLocalizer {
    * @return
    */
 
-  public double getMinAngle(double angle) {
+  private double getMinAngle(double angle) {
     if (angle > Math.PI) {
       angle -= 2 * Math.PI;
     } else if (angle < -Math.PI) {

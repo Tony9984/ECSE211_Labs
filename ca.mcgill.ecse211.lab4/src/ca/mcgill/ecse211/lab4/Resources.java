@@ -38,31 +38,6 @@ public class Resources {
    * The speed at which the robot moves forward in degrees per second.
    */
   public static final int FORWARD_SPEED = 150;
-  
-  /**
-   * The motor acceleration in degrees per second squared.
-   */
-  public static final int ACCELERATION = 500;
-
-  /**
-   * Timeout period in milliseconds.
-   */
-  public static final int TIMEOUT_PERIOD = 3000;
-
-  /**
-   * Filter time (ms)
-   */
-  public static final int FILTER_OUT = 20;
-
-  /**
-   * Offset from the wall (cm).
-   */
-  public static final int BAND_CENTER = 15;
-
-  /**
-   * Width of dead band (cm).
-   */
-  public static final int BAND_WIDTH = 3;
 
   /**
    * The ultrasonic sensor.
